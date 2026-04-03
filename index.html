@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moje sygnały giełdowe</title>
+</head>
+<body style="background:#0b1220;color:white;font-family:Arial;padding:20px;">
+
+  <h1>Moje sygnały giełdowe</h1>
+
+  <input id="ticker" placeholder="np. NVDA" style="padding:10px;font-size:16px;">
+  <button onclick="search()" style="padding:10px;">Szukaj</button>
+
+  <div id="result" style="margin-top:20px;">
+    Tu będzie wynik
+  </div>
+
+  <script>
+    function search() {
+      const ticker = document.getElementById("ticker").value;
+
+      if (!ticker) {
+        document.getElementById("result").innerText = "Wpisz ticker";
+        return;
+      }
+
+      document.getElementById("result").innerHTML =
+        "Szukasz: " + ticker + "<br>Za chwilę podłączymy newsy 🔥";
+    }
+  </script>
+
+</body>
+</html>
