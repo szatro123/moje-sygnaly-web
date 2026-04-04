@@ -179,29 +179,26 @@ window.addEventListener("load", () => {
   renderAlerts();
 });
 async function testTelegramAlert() {
-  try {
-    const ticker = document.getElementById("alertTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
-    const price = document.getElementById("alertPrice").value || "180";
-    const condition = document.getElementById("alertCondition").value || "above";
+  const ticker =
+    document.getElementById("alertTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
+  const price =
+    document.getElementById("alertPrice").value || "180";
+  const condition =
+    document.getElementById("alertCondition").value || "above";
 
+  try {
     const res = await fetch("/api/send-alert", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ ticker, price, condition }),
+      body: JSON.stringify({ ticker, price, condition })
     });
 
-    const data = await res.json();
+    const raw = await res.text();
 
-    if (!res.ok) {
-      alert("Błąd wysyłki alertu");
-      console.log(data);
-      return;
-    }
-
-    alert("Alert testowy wysłany na Telegram");
+    alert("STATUS: " + res.status + "\n\nODPOWIEDŹ:\n" + raw);
   } catch (err) {
-    alert("Błąd połączenia z backendem");
+    alert("FETCH ERROR:\n" + (err?.message || err));
   }
 }
