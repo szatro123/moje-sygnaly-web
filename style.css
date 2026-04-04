@@ -394,3 +394,6 @@ select {
     width: 100%;
   }
 }
+input::placeholder {
+  color: #6c7a90;
+}
