@@ -1,78 +1,102 @@
+// ── NEWS ──────────────────────────────────────────────────────────────
+
 async function search() {
-  const ticker = document.getElementById("ticker").value.trim();
+  const ticker = document.getElementById("ticker").value.trim().toUpperCase();
+  const resultEl = document.getElementById("result");
 
   if (!ticker) {
-    document.getElementById("result").innerText = "Wpisz ticker";
+    resultEl.innerHTML = '<span class="state-msg">⚠ Wpisz ticker (np. NVDA)</span>';
     return;
   }
 
-  document.getElementById("result").innerText = "Ładowanie...";
+  resultEl.innerHTML = `
+    <div class="chart-loading">
+      <div class="spinner"></div> Pobieranie newsów…
+    </div>`;
 
   try {
-    const res = await fetch(`https://moje-sygnaly-web.vercel.app/api/news?ticker=${ticker}`);
+    const res  = await fetch(`https://moje-sygnaly-web.vercel.app/api/news?ticker=${ticker}`);
     const data = await res.json();
 
     if (!data.news || data.news.length === 0) {
-      document.getElementById("result").innerText = "Brak świeżych newsów (6h)";
+      resultEl.innerHTML = '<span class="state-msg">📭 Brak świeżych newsów (6h)</span>';
       return;
     }
 
+    const badgeColors = {
+      "mocny":  "#00d4aa",
+      "średni": "#f59e0b",
+    };
+
     const html = data.news.map(n => {
-      const badgeColor =
-        n.strength === "mocny" ? "#22c55e" :
-        n.strength === "średni" ? "#f59e0b" :
-        "#6b7280";
+      const color = badgeColors[n.strength] ?? "#6b7280";
+      const date  = n.pubDate
+        ? new Date(n.pubDate).toLocaleString("pl-PL", { dateStyle: "short", timeStyle: "short" })
+        : "";
 
       return `
-        <div style="margin-bottom:16px; padding:12px; border:1px solid #334155; border-radius:10px; background:#111827;">
-          <div style="margin-bottom:6px;">
-            <span style="background:${badgeColor}; color:white; padding:4px 8px; border-radius:999px; font-size:12px;">
-              ${n.strength}
-            </span>
-          </div>
-
-          <a href="${n.link}" target="_blank" style="color:#4da3ff; font-size:16px; text-decoration:none;">
-            ${n.title}
-          </a>
-
-          <div style="font-size:12px; color:gray; margin-top:6px;">
-            ${n.pubDate || ""}
-          </div>
-        </div>
-      `;
+        <div class="news-card">
+          <span class="news-badge" style="background:${color}">${n.strength ?? "—"}</span>
+          <a class="news-title" href="${n.link}" target="_blank" rel="noopener">${n.title}</a>
+          ${date ? `<span class="news-date">${date}</span>` : ""}
+        </div>`;
     }).join("");
 
-    document.getElementById("result").innerHTML = html;
+    resultEl.innerHTML = html;
 
   } catch (err) {
-    document.getElementById("result").innerText = "Błąd pobierania danych";
+    console.error(err);
+    resultEl.innerHTML = '<span class="state-msg">❌ Błąd pobierania danych</span>';
   }
 }
 
+// Allow Enter key in news input
+document.getElementById("ticker").addEventListener("keydown", e => {
+  if (e.key === "Enter") search();
+});
+
+// ── CHART ─────────────────────────────────────────────────────────────
+
 function loadChart() {
-  const symbol = document.getElementById("chartTicker").value.trim() || "NASDAQ:NVDA";
+  const symbol    = document.getElementById("chartTicker").value.trim() || "NASDAQ:NVDA";
   const container = document.getElementById("tvchart");
 
+  // show spinner while widget loads
   container.innerHTML = `
-    <div class="tradingview-widget-container" style="height:100%;width:100%">
-      <div id="tradingview_chart_inner" style="height:100%;width:100%"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
-      {
-        "autosize": true,
-        "symbol": "${symbol}",
-        "interval": "15",
-        "timezone": "Europe/Warsaw",
-        "theme": "dark",
-        "style": "1",
-        "locale": "pl",
-        "allow_symbol_change": true,
-        "support_host": "https://www.tradingview.com"
-      }
-      </script>
-    </div>
-  `;
+    <div class="chart-loading">
+      <div class="spinner"></div> Ładowanie wykresu…
+    </div>`;
+
+  // small delay so spinner renders before heavy widget
+  setTimeout(() => {
+    container.innerHTML = `
+      <div class="tradingview-widget-container" style="height:100%;width:100%">
+        <div id="tradingview_chart" style="height:100%;width:100%"></div>
+        <script type="text/javascript">
+          new TradingView.widget({
+            autosize: true,
+            symbol: "${symbol}",
+            interval: "15",
+            timezone: "Europe/Warsaw",
+            theme: "dark",
+            style: "1",
+            locale: "pl",
+            allow_symbol_change: true,
+            support_host: "https://www.tradingview.com",
+            container_id: "tradingview_chart"
+          });
+        <\/script>
+      </div>`;
+  }, 150);
 }
 
+// Allow Enter key in chart input
+document.getElementById("chartTicker").addEventListener("keydown", e => {
+  if (e.key === "Enter") loadChart();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────
+
 window.addEventListener("load", () => {
-  loadChart();
+  setTimeout(loadChart, 400);
 });
