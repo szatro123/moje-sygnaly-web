@@ -178,3 +178,30 @@ function renderAlerts() {
 window.addEventListener("load", () => {
   renderAlerts();
 });
+async function testTelegramAlert() {
+  try {
+    const ticker = document.getElementById("alertTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
+    const price = document.getElementById("alertPrice").value || "180";
+    const condition = document.getElementById("alertCondition").value || "above";
+
+    const res = await fetch("https://moje-sygnaly-web.vercel.app/api/send-alert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ ticker, price, condition })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Błąd wysyłki alertu");
+      console.log(data);
+      return;
+    }
+
+    alert("Alert testowy wysłany na Telegram");
+  } catch (err) {
+    alert("Błąd połączenia z backendem");
+  }
+}
