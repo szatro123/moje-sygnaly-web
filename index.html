@@ -3,30 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Moje sygnały giełdowe</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Sygnały Giełdowe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <h1>Moje sygnały giełdowe</h1>
+  <header>
+    <div class="logo">
+      <span class="logo-icon">▲</span>
+      <span class="logo-text">SIGNAL<span class="accent">BOARD</span></span>
+    </div>
+    <div class="market-ticker" id="marketTicker">
+      <span class="ticker-item">NASDAQ <span class="up">+0.82%</span></span>
+      <span class="ticker-item">S&P500 <span class="up">+0.54%</span></span>
+      <span class="ticker-item">DOW <span class="down">−0.11%</span></span>
+    </div>
+  </header>
 
-  <div style="margin-bottom: 16px;">
-    <input id="ticker" placeholder="np. NVDA">
-    <button onclick="search()">Szukaj newsów</button>
-  </div>
+  <main>
 
-  <div id="result" style="margin-bottom:20px;">Tu będzie wynik</div>
+    <!-- NEWS SECTION -->
+    <section class="panel news-panel">
+      <div class="panel-header">
+        <span class="panel-label">📡 NEWSY</span>
+        <span class="panel-hint">Wpisz ticker, np. NVDA, AAPL</span>
+      </div>
+      <div class="search-row">
+        <input id="ticker" type="text" placeholder="Ticker (np. NVDA)" autocomplete="off" />
+        <button onclick="search()">Szukaj</button>
+      </div>
+      <div id="result" class="result-box">
+        <span class="placeholder-text">Tu pojawią się newsy...</span>
+      </div>
+    </section>
 
-  <div style="margin: 24px 0 10px; font-size: 22px; font-weight: bold;">
-    Wykres
-  </div>
+    <!-- CHART SECTION -->
+    <section class="panel chart-panel">
+      <div class="panel-header">
+        <span class="panel-label">📈 WYKRES</span>
+        <span class="panel-hint">Format: NASDAQ:NVDA</span>
+      </div>
+      <div class="search-row">
+        <input id="chartTicker" type="text" placeholder="np. NASDAQ:NVDA" value="NASDAQ:NVDA" autocomplete="off" />
+        <button onclick="loadChart()">Załaduj</button>
+      </div>
+      <div id="tvchart"></div>
+    </section>
 
-  <div class="chart-controls" style="margin-bottom: 12px;">
-    <input id="chartTicker" placeholder="np. NASDAQ:NVDA" value="NASDAQ:NVDA">
-    <button onclick="loadChart()">Załaduj wykres</button>
-  </div>
+  </main>
 
-  <div id="tvchart"></div>
+  <footer>
+    <span>© 2025 SignalBoard &nbsp;|&nbsp; Tylko do celów informacyjnych</span>
+  </footer>
 
   <script src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async></script>
   <script src="app.js"></script>
