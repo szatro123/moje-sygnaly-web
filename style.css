@@ -383,3 +383,14 @@ select {
   padding: 6px 10px;
   cursor: pointer;
 }
+@media (max-width: 700px) {
+  .search-row {
+    flex-direction: column;
+  }
+
+  .search-row input,
+  .search-row select,
+  .search-row button {
+    width: 100%;
+  }
+}
