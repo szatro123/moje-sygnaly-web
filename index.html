@@ -6,19 +6,29 @@
   <title>Moje sygnały giełdowe</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
   <h1>Moje sygnały giełdowe</h1>
 
-  <input id="ticker" placeholder="np. NVDA">
-  <button onclick="search()">Szukaj</button>
-
-  <div id="result" style="margin-top:20px;">
-    Tu będzie wynik
+  <div style="margin-bottom: 16px;">
+    <input id="ticker" placeholder="np. NVDA">
+    <button onclick="search()">Szukaj newsów</button>
   </div>
 
-  <script src="app.js"></script>
+  <div id="result" style="margin-bottom:20px;">Tu będzie wynik</div>
 
+  <div style="margin: 24px 0 10px; font-size: 22px; font-weight: bold;">
+    Wykres
+  </div>
+
+  <div class="chart-controls" style="margin-bottom: 12px;">
+    <input id="chartTicker" placeholder="np. NASDAQ:NVDA" value="NASDAQ:NVDA">
+    <button onclick="loadChart()">Załaduj wykres</button>
+  </div>
+
+  <div id="tvchart"></div>
+
+  <script src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async></script>
+  <script src="app.js"></script>
 </body>
 </html>
