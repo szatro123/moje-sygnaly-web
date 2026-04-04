@@ -25,6 +25,21 @@ const REJECT_KEYWORDS = [
   "explained",
   "recap",
   "roundup"
+  "shares",
+  "stake",
+  "holdings",
+  "position",
+  "institutional",
+  "investor",
+  "advisors",
+  "wealth",
+  "capital",
+  "llc",
+  "portfolio",
+  "ownership",
+  "buys shares",
+  "sold shares",
+  "acquired shares"
 ];
 
 const STRONG_KEYWORDS = [
