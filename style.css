@@ -17,3 +17,20 @@ button {
   color: white;
   border: none;
 }
+#tvchart {
+  height: 600px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111827;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chart-controls input {
+  min-width: 220px;
+}
