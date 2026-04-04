@@ -57,14 +57,16 @@
   </div>
 
   <div class="search-row">
-    <input id="alertTicker" type="text" placeholder="Ticker, np. NVDA lub NASDAQ:NVDA" autocomplete="off" />
+  <input id="alertTicker" type="text" placeholder="Ticker, np. NVDA lub NASDAQ:NVDA">
+  <input id="alertPrice" type="number" step="0.01" placeholder="Cena, np. 180">
+  
+  <select id="alertCondition">
+    <option value="above">Powyżej</option>
+    <option value="below">Poniżej</option>
+  </select>
 
-<input id="alertPrice" type="number" step="0.01" placeholder="Cena, np. 180" />
-      <option value="above">Powyżej</option>
-      <option value="below">Poniżej</option>
-    </select>
-    <button onclick="addAlert()">Dodaj alarm</button>
-    <button onclick="alert('klik działa')">Test Telegram</button>
+  <button onclick="addAlert()">Dodaj alarm</button>
+  <button onclick="alert('klik działa')">Test Telegram</button>
   </div>
 
   <div id="alertsList" class="result-box">
