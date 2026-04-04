@@ -58,36 +58,40 @@ document.getElementById("ticker").addEventListener("keydown", e => {
 // ── CHART ─────────────────────────────────────────────────────────────
 
 function loadChart() {
-  const symbol    = document.getElementById("chartTicker").value.trim() || "NASDAQ:NVDA";
+  let symbol = document.getElementById("chartTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
+
+  // auto-dodaj giełdę jeśli brak dwukropka
+  if (!symbol.includes(":")) {
+    symbol = "NASDAQ:" + symbol;
+    document.getElementById("chartTicker").value = symbol;
+  }
+
   const container = document.getElementById("tvchart");
+  container.innerHTML = "";
 
-  // show spinner while widget loads
-  container.innerHTML = `
-    <div class="chart-loading">
-      <div class="spinner"></div> Ładowanie wykresu…
-    </div>`;
+  const inner = document.createElement("div");
+  inner.id = "tv_" + Date.now();
+  inner.style.height = "100%";
+  inner.style.width  = "100%";
+  container.appendChild(inner);
 
-  // small delay so spinner renders before heavy widget
-  setTimeout(() => {
-    container.innerHTML = `
-      <div class="tradingview-widget-container" style="height:100%;width:100%">
-        <div id="tradingview_chart" style="height:100%;width:100%"></div>
-        <script type="text/javascript">
-          new TradingView.widget({
-            autosize: true,
-            symbol: "${symbol}",
-            interval: "15",
-            timezone: "Europe/Warsaw",
-            theme: "dark",
-            style: "1",
-            locale: "pl",
-            allow_symbol_change: true,
-            support_host: "https://www.tradingview.com",
-            container_id: "tradingview_chart"
-          });
-        <\/script>
-      </div>`;
-  }, 150);
+  const tryInit = setInterval(() => {
+    if (typeof TradingView !== "undefined") {
+      clearInterval(tryInit);
+      new TradingView.widget({
+        autosize: true,
+        symbol: symbol,
+        interval: "15",
+        timezone: "Europe/Warsaw",
+        theme: "dark",
+        style: "1",
+        locale: "pl",
+        allow_symbol_change: true,
+        container_id: inner.id,
+        support_host: "https://www.tradingview.com"
+      });
+    }
+  }, 200);
 }
 
 // Allow Enter key in chart input
