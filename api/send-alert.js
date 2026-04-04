@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -12,47 +13,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { ticker, price, condition } = req.body || {};
+    const { ticker, price, condition } = req.body;
 
-    if (!ticker || !price || !condition) {
-      return res.status(400).json({ error: "Brak danych alarmu" });
-    }
+    const message = `🚨 ALERT\n${ticker}\nCena: ${price}\nWarunek: ${condition}`;
 
-    const token = process.env.TELEGRAM_TOKEN;
-    const chatId = process.env.CHAT_ID;
-
-    if (!token || !chatId) {
-      return res.status(500).json({ error: "Brak TELEGRAM_TOKEN lub CHAT_ID" });
-    }
-
-    const text =
-      `🚨 ALERT CENOWY\n\n` +
-      `Ticker: ${ticker}\n` +
-      `Warunek: ${condition === "above" ? "powyżej" : "poniżej"} ${price}\n` +
-      `Status: test wysyłki działa`;
-
-    const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        chat_id: chatId,
-        text
+        chat_id: process.env.CHAT_ID,
+        text: message
       })
     });
 
-    const tgData = await tgRes.json();
+    const data = await response.json();
 
-    if (!tgRes.ok) {
-      return res.status(500).json({ error: "Telegram error", details: tgData });
+    if (!response.ok) {
+      return res.status(500).json({ error: data });
     }
 
-    return res.status(200).json({ ok: true, telegram: tgData });
+    return res.status(200).json({ success: true });
+
   } catch (err) {
-    return res.status(500).json({
-      error: "Błąd serwera",
-      details: err instanceof Error ? err.message : String(err)
-    });
+    return res.status(500).json({ error: err.message });
   }
 }
