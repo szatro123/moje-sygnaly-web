@@ -17,11 +17,16 @@ async function search() {
       return;
     }
 
-    const html = data.news.map(n => 
-      `<div style="margin-bottom:10px">
-        <a href="${n.link}" target="_blank">${n.title}</a>
-      </div>`
-    ).join("");
+    const html = data.news.map(n => `
+      <div style="margin-bottom:15px;">
+        <a href="${n.link}" target="_blank" style="color:#4da3ff; font-size:16px;">
+          ${n.title}
+        </a>
+        <div style="font-size:12px; color:gray;">
+          ${n.pubDate || ""}
+        </div>
+      </div>
+    `).join("");
 
     document.getElementById("result").innerHTML = html;
 
