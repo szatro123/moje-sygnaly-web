@@ -61,7 +61,6 @@ const CATALYST_KEYWORDS = [
   "lawsuit",
   "settlement",
   "investigation",
-  "guidance",
   "launch",
   "launches",
   "results"
@@ -94,7 +93,9 @@ export default async function handler(req, res) {
     }
 
     const xml = await response.text();
-    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 20);
+    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 30);
+
+    const now = new Date();
 
     const news = items
       .map((item) => {
@@ -120,6 +121,7 @@ export default async function handler(req, res) {
         };
       })
       .filter((item) => isRelevantNews(item.title, ticker))
+      .filter((item) => isTodayNews(item.pubDate, now))
       .slice(0, 8);
 
     return res.status(200).json({ ticker, news });
@@ -133,25 +135,34 @@ export default async function handler(req, res) {
 
 function isRelevantNews(title, ticker) {
   const t = title.toLowerCase();
+  const tk = ticker.toLowerCase();
 
-  // musi zawierać ticker albo formę giełdową w tytule
   const mentionsTicker =
-    t.includes(ticker.toLowerCase()) ||
-    t.includes(`(${ticker.toLowerCase()})`) ||
-    t.includes(`:${ticker.toLowerCase()}`);
+    t.includes(tk) ||
+    t.includes(`(${tk})`) ||
+    t.includes(`:${tk}`);
 
   if (!mentionsTicker) return false;
 
-  // odrzuć typowy szum
   if (REJECT_KEYWORDS.some((kw) => t.includes(kw))) {
     return false;
   }
 
-  // preferuj konkretne katalizatory
   const hasCatalyst = CATALYST_KEYWORDS.some((kw) => t.includes(kw));
-
-  // jeśli nie ma katalizatora, ale tytuł jest bardzo ticker-specific, można zostawić
   return hasCatalyst || mentionsTicker;
+}
+
+function isTodayNews(pubDate, now = new Date()) {
+  if (!pubDate) return false;
+
+  const d = new Date(pubDate);
+  if (Number.isNaN(d.getTime())) return false;
+
+  return (
+    d.getUTCFullYear() === now.getUTCFullYear() &&
+    d.getUTCMonth() === now.getUTCMonth() &&
+    d.getUTCDate() === now.getUTCDate()
+  );
 }
 
 function decodeHtml(str) {
