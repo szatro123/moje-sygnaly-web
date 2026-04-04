@@ -25,7 +25,7 @@ async function search() {
 
     const badgeColors = {
       "mocny":  "#00d4aa",
-      "średni": "#f59e0b",
+      "sredni": "#f59e0b",
     };
 
     const html = data.news.map(n => {
@@ -50,7 +50,6 @@ async function search() {
   }
 }
 
-// Allow Enter key in news input
 document.getElementById("ticker").addEventListener("keydown", e => {
   if (e.key === "Enter") search();
 });
@@ -60,41 +59,38 @@ document.getElementById("ticker").addEventListener("keydown", e => {
 function loadChart() {
   let symbol = document.getElementById("chartTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
 
-  // auto-dodaj giełdę jeśli brak dwukropka
+  // auto-dodaj gielde jesli brak dwukropka
   if (!symbol.includes(":")) {
     symbol = "NASDAQ:" + symbol;
     document.getElementById("chartTicker").value = symbol;
   }
 
   const container = document.getElementById("tvchart");
-  container.innerHTML = "";
 
-  const inner = document.createElement("div");
-  inner.id = "tv_" + Date.now();
-  inner.style.height = "100%";
-  inner.style.width  = "100%";
-  container.appendChild(inner);
+  // Oficjalny iframe embed - jedyny sposob dzialajacy na GitHub Pages
+  const src = "https://www.tradingview.com/widgetembed/?" +
+    "symbol="             + encodeURIComponent(symbol) +
+    "&interval=15" +
+    "&timezone=Europe%2FWarsaw" +
+    "&theme=dark" +
+    "&style=1" +
+    "&locale=pl" +
+    "&allow_symbol_change=true" +
+    "&hide_top_toolbar=false" +
+    "&save_image=false" +
+    "&backgroundColor=rgba(8%2C12%2C20%2C1)";
 
-  const tryInit = setInterval(() => {
-    if (typeof TradingView !== "undefined") {
-      clearInterval(tryInit);
-      new TradingView.widget({
-        autosize: true,
-        symbol: symbol,
-        interval: "15",
-        timezone: "Europe/Warsaw",
-        theme: "dark",
-        style: "1",
-        locale: "pl",
-        allow_symbol_change: true,
-        container_id: inner.id,
-        support_host: "https://www.tradingview.com"
-      });
-    }
-  }, 200);
+  container.innerHTML =
+    '<iframe' +
+    ' src="' + src + '"' +
+    ' style="width:100%;height:100%;border:none;"' +
+    ' allowtransparency="true"' +
+    ' frameborder="0"' +
+    ' scrolling="no"' +
+    ' allowfullscreen' +
+    '></iframe>';
 }
 
-// Allow Enter key in chart input
 document.getElementById("chartTicker").addEventListener("keydown", e => {
   if (e.key === "Enter") loadChart();
 });
@@ -102,5 +98,5 @@ document.getElementById("chartTicker").addEventListener("keydown", e => {
 // ── INIT ──────────────────────────────────────────────────────────────
 
 window.addEventListener("load", () => {
-  setTimeout(loadChart, 400);
+  loadChart();
 });
