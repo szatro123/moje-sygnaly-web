@@ -184,7 +184,7 @@ async function testTelegramAlert() {
     const price = document.getElementById("alertPrice").value || "180";
     const condition = document.getElementById("alertCondition").value || "above";
 
-    const res = await fetch("https://moje-sygnaly-web.vercel.app/api/send-alert", {
+    const res = await fetch("/api/send-alert", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
