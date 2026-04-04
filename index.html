@@ -15,19 +15,20 @@
       <span class="logo-icon">▲</span>
       <span class="logo-text">SIGNAL<span class="accent">BOARD</span></span>
     </div>
-    <div class="market-ticker">
+    <div class="market-ticker" id="marketTicker">
       <span class="ticker-item">NASDAQ <span class="up">+0.82%</span></span>
-      <span class="ticker-item">S&amp;P500 <span class="up">+0.54%</span></span>
+      <span class="ticker-item">S&P500 <span class="up">+0.54%</span></span>
       <span class="ticker-item">DOW <span class="down">−0.11%</span></span>
     </div>
   </header>
 
   <main>
 
+    <!-- NEWS SECTION -->
     <section class="panel news-panel">
       <div class="panel-header">
         <span class="panel-label">📡 NEWSY</span>
-        <span class="panel-hint">Wpisz ticker, np. NVDA</span>
+        <span class="panel-hint">Wpisz ticker, np. NVDA, AAPL</span>
       </div>
       <div class="search-row">
         <input id="ticker" type="text" placeholder="Ticker (np. NVDA)" autocomplete="off" />
@@ -38,6 +39,7 @@
       </div>
     </section>
 
+    <!-- CHART SECTION -->
     <section class="panel chart-panel">
       <div class="panel-header">
         <span class="panel-label">📈 WYKRES</span>
@@ -56,7 +58,6 @@
     <span>© 2025 SignalBoard &nbsp;|&nbsp; Tylko do celów informacyjnych</span>
   </footer>
 
-  <script src="https://s3.tradingview.com/tv.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
