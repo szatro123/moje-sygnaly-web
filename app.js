@@ -100,3 +100,81 @@ document.getElementById("chartTicker").addEventListener("keydown", e => {
 window.addEventListener("load", () => {
   loadChart();
 });
+let alerts = JSON.parse(localStorage.getItem("priceAlerts") || "[]");
+
+function addAlert() {
+  const tickerInput = document.getElementById("alertTicker");
+  const priceInput = document.getElementById("alertPrice");
+  const conditionInput = document.getElementById("alertCondition");
+
+  let ticker = tickerInput.value.trim().toUpperCase();
+  const price = Number(priceInput.value);
+  const condition = conditionInput.value;
+
+  if (!ticker) {
+    ticker = document.getElementById("chartTicker").value.trim().toUpperCase();
+  }
+
+  if (ticker && !ticker.includes(":")) {
+    ticker = "NASDAQ:" + ticker;
+  }
+
+  if (!ticker || !price || price <= 0) {
+    alert("Wpisz ticker i poprawną cenę alarmu");
+    return;
+  }
+
+  const newAlert = {
+    id: Date.now(),
+    ticker,
+    price,
+    condition,
+    createdAt: new Date().toISOString()
+  };
+
+  alerts.unshift(newAlert);
+  saveAlerts();
+  renderAlerts();
+
+  tickerInput.value = ticker;
+  priceInput.value = "";
+}
+
+function removeAlert(id) {
+  alerts = alerts.filter(a => a.id !== id);
+  saveAlerts();
+  renderAlerts();
+}
+
+function saveAlerts() {
+  localStorage.setItem("priceAlerts", JSON.stringify(alerts));
+}
+
+function renderAlerts() {
+  const box = document.getElementById("alertsList");
+  if (!box) return;
+
+  if (alerts.length === 0) {
+    box.innerHTML = `<span class="placeholder-text">Tu pojawią się alarmy...</span>`;
+    return;
+  }
+
+  box.innerHTML = alerts.map(a => `
+    <div class="alert-item">
+      <div class="alert-top">
+        <span class="alert-ticker">${a.ticker}</span>
+        <button class="alert-remove" onclick="removeAlert(${a.id})">Usuń</button>
+      </div>
+      <div class="alert-meta">
+        Warunek: ${a.condition === "above" ? "cena powyżej" : "cena poniżej"} ${a.price}
+      </div>
+      <div class="alert-meta">
+        Dodano: ${new Date(a.createdAt).toLocaleString("pl-PL")}
+      </div>
+    </div>
+  `).join("");
+}
+
+window.addEventListener("load", () => {
+  renderAlerts();
+});
