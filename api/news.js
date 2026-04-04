@@ -27,13 +27,40 @@ const REJECT_KEYWORDS = [
   "roundup"
 ];
 
-const CATALYST_KEYWORDS = [
+const STRONG_KEYWORDS = [
+  "earnings beat",
+  "beats earnings",
+  "raised guidance",
+  "guidance raised",
+  "fda approval",
+  "approved by fda",
+  "contract awarded",
+  "major deal",
+  "acquisition",
+  "acquire",
+  "buyout",
+  "takeover",
+  "partnership",
+  "collaboration",
+  "wins contract",
+  "secures contract",
+  "dividend",
+  "buyback",
+  "share repurchase",
+  "upgrade",
+  "price target raised",
+  "trial success",
+  "positive phase 2",
+  "positive phase 3",
+  "launches",
+  "strong results"
+];
+
+const MEDIUM_KEYWORDS = [
   "earnings",
   "revenue",
   "eps",
   "guidance",
-  "raised",
-  "cut",
   "forecast",
   "approval",
   "approved",
@@ -44,25 +71,17 @@ const CATALYST_KEYWORDS = [
   "phase 3",
   "contract",
   "award",
-  "awarded",
   "deal",
   "partnership",
   "collaboration",
-  "acquisition",
-  "acquire",
   "merger",
-  "buyout",
-  "takeover",
   "upgrade",
   "downgrade",
   "price target",
-  "dividend",
-  "buyback",
   "lawsuit",
   "settlement",
   "investigation",
   "launch",
-  "launches",
   "results"
 ];
 
@@ -93,7 +112,7 @@ export default async function handler(req, res) {
     }
 
     const xml = await response.text();
-    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 30);
+    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, 40);
 
     const now = new Date();
 
@@ -114,14 +133,19 @@ export default async function handler(req, res) {
           block.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] ||
           "";
 
+        const cleanTitle = decodeHtml(title);
+        const strength = classifyStrength(cleanTitle, ticker);
+
         return {
-          title: decodeHtml(title),
+          title: cleanTitle,
           link,
-          pubDate
+          pubDate,
+          strength
         };
       })
       .filter((item) => isRelevantNews(item.title, ticker))
-      .filter((item) => isTodayNews(item.pubDate, now))
+      .filter((item) => isWithinLastHours(item.pubDate, 6, now))
+      .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
       .slice(0, 8);
 
     return res.status(200).json({ ticker, news });
@@ -148,21 +172,40 @@ function isRelevantNews(title, ticker) {
     return false;
   }
 
-  const hasCatalyst = CATALYST_KEYWORDS.some((kw) => t.includes(kw));
-  return hasCatalyst || mentionsTicker;
+  return true;
 }
 
-function isTodayNews(pubDate, now = new Date()) {
+function isWithinLastHours(pubDate, hours, now = new Date()) {
   if (!pubDate) return false;
 
   const d = new Date(pubDate);
   if (Number.isNaN(d.getTime())) return false;
 
-  return (
-    d.getUTCFullYear() === now.getUTCFullYear() &&
-    d.getUTCMonth() === now.getUTCMonth() &&
-    d.getUTCDate() === now.getUTCDate()
-  );
+  const diffMs = now.getTime() - d.getTime();
+  const maxMs = hours * 60 * 60 * 1000;
+
+  return diffMs >= 0 && diffMs <= maxMs;
+}
+
+function classifyStrength(title, ticker) {
+  const t = title.toLowerCase();
+  const tk = ticker.toLowerCase();
+
+  const stronglyTickerSpecific =
+    t.includes(`(${tk})`) ||
+    t.includes(`:${tk}`) ||
+    t.startsWith(tk + " ") ||
+    t.includes(" " + tk + " ");
+
+  if (STRONG_KEYWORDS.some((kw) => t.includes(kw))) {
+    return "mocny";
+  }
+
+  if (MEDIUM_KEYWORDS.some((kw) => t.includes(kw))) {
+    return stronglyTickerSpecific ? "mocny" : "średni";
+  }
+
+  return stronglyTickerSpecific ? "średni" : "słaby";
 }
 
 function decodeHtml(str) {
