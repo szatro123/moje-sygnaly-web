@@ -1,6 +1,6 @@
 try {
   const SUPABASE_URL = "https://woetuzltrenmhmhitzbi.supabase.co";
-  const SUPABASE_KEY = "TU_WKLEJ_SB_PUBLISHABLE";
+  const SUPABASE_KEY = "sb_publishable_1nIYzQLSklZzvAuI2QhrlQ_I7zCNLmR";
 
   const fullUrl = SUPABASE_URL + "/rest/v1/alerts";
 
