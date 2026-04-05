@@ -1,31 +1,47 @@
 async function addAlert() {
-  const ticker = document.getElementById("alertTicker").value.trim().toUpperCase();
-  const price = Number(document.getElementById("alertPrice").value);
-  const condition = document.getElementById("alertCondition").value;
+  const tickerInput = document.getElementById("alertTicker");
+  const priceInput = document.getElementById("alertPrice");
+  const conditionInput = document.getElementById("alertCondition");
 
-  if (!ticker || !price) {
-    alert("Wpisz dane");
+  let ticker = tickerInput.value.trim().toUpperCase();
+  const price = Number(priceInput.value);
+  const condition = conditionInput.value;
+
+  if (!ticker) {
+    const chartTicker = document.getElementById("chartTicker");
+    if (chartTicker) {
+      ticker = chartTicker.value.trim().toUpperCase();
+    }
+  }
+
+  if (ticker && !ticker.includes(":")) {
+    ticker = "NASDAQ:" + ticker;
+  }
+
+  if (!ticker || !price || price <= 0) {
+    alert("Wpisz ticker i poprawną cenę alarmu");
     return;
   }
 
-  try {
-    const res = await fetch("/api/add-alert", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        ticker,
-        target_price: price,
-        condition
-      })
-    });
+  const alerts = JSON.parse(localStorage.getItem("priceAlerts") || "[]");
 
-    const data = await res.json();
+  const newAlert = {
+    id: Date.now(),
+    ticker,
+    price,
+    condition,
+    createdAt: new Date().toISOString()
+  };
 
-    alert(JSON.stringify(data));
+  alerts.unshift(newAlert);
+  localStorage.setItem("priceAlerts", JSON.stringify(alerts));
 
-  } catch (err) {
-    alert("Błąd: " + err.message);
+  if (typeof renderAlerts === "function") {
+    renderAlerts();
   }
+
+  alert("Alert zapisany lokalnie na stronie");
+
+  tickerInput.value = ticker;
+  priceInput.value = "";
 }
