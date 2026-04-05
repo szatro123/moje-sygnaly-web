@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://woetuzltrenmhmhitzbi.supabase.co";
-const SUPABASE_KEY = "TU_WKLEJ_SB_PUBLISHABLE";
+const SUPABASE_KEY = "sb_publishable_1nIYzQLSklZzvAuI2QhrlQ_I7zCNLmR";
 
 export default async function handler(req, res) {
   // CORS (dla pewności)
