@@ -1,3 +1,7 @@
+export const config = {
+  runtime: "nodejs"
+};
+
 export default async function handler(req, res) {
   try {
     const testUrl = `${process.env.SUPABASE_URL}/rest/v1/alerts?select=*`;
@@ -13,7 +17,6 @@ export default async function handler(req, res) {
     const raw = await response.text();
 
     return res.status(200).json({
-      testUrl,
       ok: response.ok,
       status: response.status,
       raw
