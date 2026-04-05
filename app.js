@@ -13,7 +13,7 @@ async function search() {
     </div>`;
 
   try {
-    const res = await fetch(`/api/news?ticker=${ticker}`);
+    fetch(`https://moje-sygnaly-web.vercel.app/api/news?ticker=${ticker}`)
     const data = await res.json();
 
     if (!data.news || data.news.length === 0) {
