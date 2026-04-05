@@ -14,38 +14,39 @@ export default async function handler(req, res) {
   try {
     const { ticker, target_price, condition } = req.body || {};
 
-    if (!ticker || target_price === undefined || !condition)
+    if (!ticker || target_price === undefined || !condition) {
       return res.status(400).json({ error: "Brak danych alertu" });
     }
 
-    const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/alerts`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.SUPABASE_KEY,
-          Authorization: `Bearer ${process.env.SUPABASE_KEY}`,
-          Prefer: "return=representation"
-        },
-        body: JSON.stringify([
-          {
-            ticker,
-            target_price,
-            condition,
-            triggered: false
-          }
-        ])
-      }
-    );
+    const url = `${process.env.SUPABASE_URL}/rest/v1/alerts`;
 
-    const data = await response.json();
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.SUPABASE_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_KEY}`,
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify([
+        {
+          ticker,
+          target_price,
+          condition,
+          triggered: false
+        }
+      ])
+    });
 
-    if (!response.ok) {
-      return res.status(500).json({ error: data });
-    }
+    const raw = await response.text();
 
-    return res.status(200).json({ success: true, alert: data[0] });
+    return res.status(response.status).json({
+      ok: response.ok,
+      status: response.status,
+      supabase_url_exists: !!process.env.SUPABASE_URL,
+      supabase_key_exists: !!process.env.SUPABASE_KEY,
+      raw
+    });
   } catch (err) {
     return res.status(500).json({
       error: err instanceof Error ? err.message : String(err)
