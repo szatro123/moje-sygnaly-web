@@ -63,7 +63,7 @@ async function addAlert() {
   }
 
   try {
-    const res = await fetch("/api/add-alert", {
+    const res = await fetch("https://moje-sygnaly-web.vercel.app/api/add-alert", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
