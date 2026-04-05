@@ -24,7 +24,7 @@ async function addAlert() {
   }
 
   const SUPABASE_URL = "https://woetuzltrenmhmhitzbi.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "TU_WKLEJ_SWOJ_SB_PUBLISHABLE_KEY";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_1nIYzQLSklZzvAuI2QhrlQ_I7zCNLmR ";
 
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/alerts`, {
