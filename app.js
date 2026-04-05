@@ -77,11 +77,10 @@ async function addAlert() {
 
     const data = await res.json();
 
-    if (!res.ok) {
-      alert("Błąd zapisu alertu: " + JSON.stringify(data));
-      console.log(data);
-      return;
-    }
+    alert(JSON.stringify(data));
+if (!res.ok) {
+  return;
+}
 
     alert("Alert zapisany do bazy");
 
@@ -89,7 +88,7 @@ async function addAlert() {
     priceInput.value = "";
 
   } catch (err) {
-    alert("Błąd połączenia z bazą");
+    alert("Błąd połączenia z bazą: " + (err?.message || err));
     console.log(err);
   }
 }
