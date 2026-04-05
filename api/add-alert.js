@@ -1,46 +1,19 @@
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
-    const { ticker, target_price, condition } = req.body || {};
+    const testUrl = `${process.env.SUPABASE_URL}/rest/v1/alerts?select=*`;
 
-    if (!ticker || target_price === undefined || !condition) {
-      return res.status(400).json({ error: "Brak danych alertu" });
-    }
-
-    const url = `${process.env.SUPABASE_URL}/rest/v1/alerts`;
-
-    const response = await fetch(url, {
-      method: "POST",
+    const response = await fetch(testUrl, {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json",
         apikey: process.env.SUPABASE_KEY,
-        Authorization: `Bearer ${process.env.SUPABASE_KEY}`,
-        Prefer: "return=representation"
-      },
-      body: JSON.stringify([
-        {
-          ticker,
-          target_price,
-          condition,
-          triggered: false
-        }
-      ])
+        Authorization: `Bearer ${process.env.SUPABASE_KEY}`
+      }
     });
 
     const raw = await response.text();
 
-    return res.status(response.status).json({
+    return res.status(200).json({
+      testUrl,
       ok: response.ok,
       status: response.status,
       raw
