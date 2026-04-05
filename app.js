@@ -8,31 +8,24 @@ async function addAlert() {
     return;
   }
 
-  const SUPABASE_URL = "https://woetuzltrenmhmhitzbi.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_1nIYzQLSklZzvAuI2QhrlQ_I7zCNLmR";
-
   try {
-    const res = await fetch(SUPABASE_URL + "/rest/v1/alerts", {
+    const res = await fetch("/api/add-alert", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify([{
-        ticker: ticker,
+      body: JSON.stringify({
+        ticker,
         target_price: price,
-        condition: condition,
-        triggered: false
-      }])
+        condition
+      })
     });
 
-    const text = await res.text();
+    const data = await res.json();
 
-    alert(text);
+    alert(JSON.stringify(data));
 
   } catch (err) {
     alert("Błąd: " + err.message);
-    console.log(err);
   }
 }
