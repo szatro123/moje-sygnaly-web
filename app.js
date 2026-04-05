@@ -202,3 +202,87 @@ async function testTelegramAlert() {
     alert("FETCH ERROR:\n" + (err?.message || err));
   }
 }
+let triggeredAlerts = JSON.parse(localStorage.getItem("triggeredAlerts") || "[]");
+
+function saveTriggeredAlerts() {
+  localStorage.setItem("triggeredAlerts", JSON.stringify(triggeredAlerts));
+}
+
+function isAlreadyTriggered(alertId) {
+  return triggeredAlerts.includes(alertId);
+}
+
+function markTriggered(alertId) {
+  if (!triggeredAlerts.includes(alertId)) {
+    triggeredAlerts.push(alertId);
+    saveTriggeredAlerts();
+  }
+}
+
+async function fetchLivePrice(ticker) {
+  const res = await fetch(`/api/price?ticker=${encodeURIComponent(ticker)}`);
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Błąd pobierania ceny");
+  }
+
+  return Number(data.price);
+}
+
+async function sendTriggeredAlert(alertObj, livePrice) {
+  const res = await fetch("/api/send-alert", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      ticker: alertObj.ticker,
+      price: `${alertObj.price} | live: ${livePrice}`,
+      condition: alertObj.condition
+    })
+  });
+
+  if (!res.ok) {
+    const raw = await res.text();
+    throw new Error(raw);
+  }
+}
+
+function shouldTriggerAlert(alertObj, livePrice) {
+  if (alertObj.condition === "above") {
+    return livePrice >= Number(alertObj.price);
+  }
+
+  if (alertObj.condition === "below") {
+    return livePrice <= Number(alertObj.price);
+  }
+
+  return false;
+}
+
+async function checkAlertsLoop() {
+  if (!alerts.length) return;
+
+  for (const alertObj of alerts) {
+    if (isAlreadyTriggered(alertObj.id)) continue;
+
+    try {
+      const livePrice = await fetchLivePrice(alertObj.ticker);
+
+      if (!livePrice || Number.isNaN(livePrice)) continue;
+
+      if (shouldTriggerAlert(alertObj, livePrice)) {
+        await sendTriggeredAlert(alertObj, livePrice);
+        markTriggered(alertObj.id);
+      }
+    } catch (err) {
+      console.log("Alert check error:", err);
+    }
+  }
+}
+
+setInterval(checkAlertsLoop, 15000);
+window.addEventListener("load", () => {
+  setTimeout(checkAlertsLoop, 3000);
+});
