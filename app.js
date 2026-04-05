@@ -1,45 +1,3 @@
-async function search() {
-  const ticker = document.getElementById("ticker").value.trim().toUpperCase();
-  const resultEl = document.getElementById("result");
-
-  if (!ticker) {
-    resultEl.innerHTML = '<span class="state-msg">⚠️ Wpisz ticker (np. NVDA)</span>';
-    return;
-  }
-
-  resultEl.innerHTML = `
-    <div class="chart-loading">
-      <div class="spinner"></div> Pobieranie newsów…
-    </div>`;
-
-  try {
-    fetch(`https://moje-sygnaly-web.vercel.app/api/news?ticker=${ticker}`)
-    const data = await res.json();
-
-    if (!data.news || data.news.length === 0) {
-      resultEl.innerHTML = '<span class="state-msg">ℹ️ Brak świeżych newsów</span>';
-      return;
-    }
-
-    const html = data.news.map(n => `
-      <div class="news-card">
-        <a class="news-title" href="${n.link}" target="_blank">${n.title}</a>
-      </div>
-    `).join("");
-
-    resultEl.innerHTML = html;
-
-  } catch (err) {
-    resultEl.innerHTML = '<span class="state-msg">❌ Błąd pobierania danych</span>';
-  }
-}
-
-document.getElementById("ticker").addEventListener("keydown", e => {
-  if (e.key === "Enter") search();
-});
-
-// ================= ALERTY =================
-
 async function addAlert() {
   const tickerInput = document.getElementById("alertTicker");
   const priceInput = document.getElementById("alertPrice");
@@ -50,7 +8,10 @@ async function addAlert() {
   const condition = conditionInput.value;
 
   if (!ticker) {
-    ticker = document.getElementById("chartTicker").value.trim().toUpperCase();
+    const chartTicker = document.getElementById("chartTicker");
+    if (chartTicker) {
+      ticker = chartTicker.value.trim().toUpperCase();
+    }
   }
 
   if (ticker && !ticker.includes(":")) {
@@ -62,33 +23,42 @@ async function addAlert() {
     return;
   }
 
+  const SUPABASE_URL = "https://woetuzltrenmhmhitzbi.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "TU_WKLEJ_SWOJ_SB_PUBLISHABLE_KEY";
+
   try {
-    const res = await fetch("https://moje-sygnaly-web.vercel.app/api/add-alert", {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/alerts`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_PUBLISHABLE_KEY,
+        "Authorization": `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+        "Prefer": "return=representation"
       },
-      body: JSON.stringify({
-        ticker,
-        target_price: price,
-        condition
-      })
+      body: JSON.stringify([
+        {
+          ticker,
+          target_price: price,
+          condition,
+          triggered: false
+        }
+      ])
     });
 
-    const data = await res.json();
+    const text = await res.text();
 
-    alert(JSON.stringify(data));
-if (!res.ok) {
-  return;
-}
+    if (!res.ok) {
+      alert("Błąd zapisu do Supabase: " + text);
+      return;
+    }
 
-    alert("Alert zapisany do bazy");
+    alert("Alert zapisany do Supabase");
 
     tickerInput.value = ticker;
     priceInput.value = "";
 
   } catch (err) {
-    alert("Błąd połączenia z bazą: " + (err?.message || err));
+    alert("Błąd połączenia z Supabase: " + (err?.message || err));
     console.log(err);
   }
 }
