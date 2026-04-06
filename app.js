@@ -107,7 +107,6 @@ async function loadChart() {
     }
   }
 
-  document.getElementById("chartTicker").value = symbol;
 
   const src =
     "https://www.tradingview.com/widgetembed/?" +
