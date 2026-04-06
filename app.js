@@ -156,6 +156,50 @@ async function addAlert() {
     console.log(err);
   }
 }
+async function loadAlerts() {
+  const box = document.getElementById("alertsList");
+  if (!box) return;
+
+  box.innerHTML = `<span class="placeholder-text">Ładowanie alarmów...</span>`;
+
+  try {
+    const res = await fetch("/api/list-alerts");
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      box.innerHTML = `<span class="placeholder-text">Błąd ładowania alarmów</span>`;
+      console.log(data);
+      return;
+    }
+
+    const alerts = data.alerts || [];
+
+    if (alerts.length === 0) {
+      box.innerHTML = `<span class="placeholder-text">Tu pojawią się alarmy...</span>`;
+      return;
+    }
+
+    box.innerHTML = alerts.map(a => `
+      <div class="alert-item">
+        <div class="alert-top">
+          <span class="alert-ticker">${a.ticker}</span>
+        </div>
+        <div class="alert-meta">
+          Warunek: ${a.condition === "above" ? "cena powyżej" : "cena poniżej"} ${a.target_price}
+        </div>
+        <div class="alert-meta">
+          Status: ${a.triggered ? "zrealizowany" : "aktywny"}
+        </div>
+        <div class="alert-meta">
+          Dodano: ${a.created_at ? new Date(a.created_at).toLocaleString("pl-PL") : "-"}
+        </div>
+      </div>
+    `).join("");
+  } catch (err) {
+    box.innerHTML = `<span class="placeholder-text">Błąd połączenia z bazą</span>`;
+    console.log(err);
+  }
+}
 async function testTelegramAlert() {
   const ticker =
     document.getElementById("alertTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
