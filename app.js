@@ -62,16 +62,34 @@ document.getElementById("ticker")?.addEventListener("keydown", (e) => {
 
 // — CHART —
 
-function loadChart() {
-  let symbol =
-    document.getElementById("chartTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
+async function loadChart() {
+  let input = document.getElementById("chartTicker").value.trim().toUpperCase();
+  const container = document.getElementById("tvchart");
 
-  if (!symbol.includes(":")) {
-    symbol = "NASDAQ:" + symbol;
-    document.getElementById("chartTicker").value = symbol;
+  if (!input) input = "NVDA";
+
+  const exchanges = ["NASDAQ", "NYSE", "AMEX"];
+  let symbol = input;
+
+  if (!input.includes(":")) {
+    try {
+      const res = await fetch(`https://symbol-search.tradingview.com/symbol_search/?text=${input}`);
+      const data = await res.json();
+
+      const found = data.find(s => s.symbol === input);
+
+      if (found) {
+        symbol = `${found.exchange}:${input}`;
+      } else {
+        symbol = "NASDAQ:" + input;
+      }
+    } catch (e) {
+      console.log("search error", e);
+      symbol = "NASDAQ:" + input;
+    }
   }
 
-  const container = document.getElementById("tvchart");
+  document.getElementById("chartTicker").value = symbol;
 
   const src =
     "https://www.tradingview.com/widgetembed/?" +
@@ -88,21 +106,10 @@ function loadChart() {
     "&backgroundColor=rgba(8%2C12%2C20%2C1)";
 
   container.innerHTML =
-    '<iframe ' +
-    'src="' +
+    '<iframe src="' +
     src +
-    '" ' +
-    'style="width:100%;height:100%;border:none;" ' +
-    'allowtransparency="true" ' +
-    'frameborder="0" ' +
-    'scrolling="no" ' +
-    'allowfullscreen' +
-    '></iframe>';
+    '" style="width:100%;height:100%;border:none;" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe>';
 }
-
-document.getElementById("chartTicker")?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") loadChart();
-});
 
 // — ALERTY —
 
