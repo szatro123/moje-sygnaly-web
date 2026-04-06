@@ -135,13 +135,13 @@ async function addAlert() {
     const res = await fetch("/api/add-alert", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         ticker,
         target_price: price,
-        condition,
-      }),
+        condition
+      })
     });
 
     const data = await res.json();
@@ -156,6 +156,34 @@ async function addAlert() {
 
     tickerInput.value = ticker;
     priceInput.value = "";
+
+    loadAlerts();
+  } catch (err) {
+    alert("Błąd połączenia z backendem");
+    console.log(err);
+  }
+}
+
+async function deleteAlert(id) {
+  const ok = confirm("Usunąć ten alert?");
+  if (!ok) return;
+
+  try {
+    const res = await fetch("/api/delete-alert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      alert("Błąd usuwania alertu");
+      console.log(data);
+      return;
+    }
 
     loadAlerts();
   } catch (err) {
@@ -193,6 +221,7 @@ async function loadAlerts() {
       <div class="alert-item">
         <div class="alert-top">
           <span class="alert-ticker">${a.ticker}</span>
+          <button class="alert-remove" onclick="deleteAlert(${a.id})">Usuń</button>
         </div>
         <div class="alert-meta">
           Warunek: ${a.condition === "above" ? "cena powyżej" : "cena poniżej"} ${a.target_price}
@@ -225,9 +254,9 @@ async function testTelegramAlert() {
     const res = await fetch("/api/send-alert", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ ticker, price, condition }),
+      body: JSON.stringify({ ticker, price, condition })
     });
 
     const raw = await res.text();
