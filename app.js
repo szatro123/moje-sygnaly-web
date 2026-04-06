@@ -63,55 +63,33 @@ document.getElementById("ticker")?.addEventListener("keydown", (e) => {
 // — CHART —
 
 async function loadChart() {
-  let input = document.getElementById("chartTicker").value.trim().toUpperCase();
+  const inputEl = document.getElementById("chartTicker");
   const container = document.getElementById("tvchart");
 
-  if (!input) input = "NVDA";
+  let raw = inputEl.value.trim().toUpperCase();
+  if (!raw) raw = "NVDA";
 
-  let symbol = input;
+  let resolved = raw;
 
-  if (!input.includes(":")) {
-    try {
-      const res = await fetch(
-        `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(input)}`
-      );
-      const data = await res.json();
+  try {
+    const res = await fetch(`/api/resolve-symbol?ticker=${encodeURIComponent(raw)}`);
+    const data = await res.json();
 
-      const exactMatches = (data || []).filter(
-        (s) => (s.symbol || "").toUpperCase() === input
-      );
-
-      const preferredExchanges = ["NYSE", "NASDAQ", "AMEX"];
-
-      let chosen = null;
-
-      for (const ex of preferredExchanges) {
-        chosen = exactMatches.find(
-          (s) => (s.exchange || "").toUpperCase() === ex
-        );
-        if (chosen) break;
-      }
-
-      if (!chosen && exactMatches.length > 0) {
-        chosen = exactMatches[0];
-      }
-
-      if (chosen) {
-        symbol = `${chosen.exchange.toUpperCase()}:${chosen.symbol.toUpperCase()}`;
-      } else {
-        symbol = `NASDAQ:${input}`;
-      }
-    } catch (e) {
-      console.log("search error", e);
-      symbol = `NASDAQ:${input}`;
+    if (res.ok && data.ok && data.symbol) {
+      resolved = data.symbol;
+    } else {
+      console.log("resolve-symbol:", data);
     }
+  } catch (err) {
+    console.log("resolve-symbol error:", err);
   }
 
+  // pokaż co znalazło (np. NYSE:AA)
+  inputEl.value = resolved;
 
   const src =
     "https://www.tradingview.com/widgetembed/?" +
-    "symbol=" +
-    encodeURIComponent(symbol) +
+    "symbol=" + encodeURIComponent(resolved) +
     "&interval=15" +
     "&timezone=Europe%2FWarsaw" +
     "&theme=dark" +
