@@ -102,7 +102,7 @@ window.addEventListener("load", () => {
 });
 let alerts = JSON.parse(localStorage.getItem("priceAlerts") || "[]");
 
-function addAlert() {
+async function addAlert() {
   const tickerInput = document.getElementById("alertTicker");
   const priceInput = document.getElementById("alertPrice");
   const conditionInput = document.getElementById("alertCondition");
@@ -112,7 +112,10 @@ function addAlert() {
   const condition = conditionInput.value;
 
   if (!ticker) {
-    ticker = document.getElementById("chartTicker").value.trim().toUpperCase();
+    const chartTicker = document.getElementById("chartTicker");
+    if (chartTicker) {
+      ticker = chartTicker.value.trim().toUpperCase();
+    }
   }
 
   if (ticker && !ticker.includes(":")) {
@@ -124,22 +127,36 @@ function addAlert() {
     return;
   }
 
-  const newAlert = {
-    id: Date.now(),
-    ticker,
-    price,
-    condition,
-    createdAt: new Date().toISOString()
-  };
+  try {
+    const res = await fetch("/api/add-alert", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        ticker,
+        target_price: price,
+        condition
+      })
+    });
 
-  alerts.unshift(newAlert);
-  saveAlerts();
-  renderAlerts();
+    const data = await res.json();
 
-  tickerInput.value = ticker;
-  priceInput.value = "";
+    if (!res.ok || !data.ok) {
+      alert("Błąd zapisu alertu");
+      console.log(data);
+      return;
+    }
+
+    alert("Alert zapisany do bazy");
+
+    tickerInput.value = ticker;
+    priceInput.value = "";
+  } catch (err) {
+    alert("Błąd połączenia z backendem");
+    console.log(err);
+  }
 }
-
 function removeAlert(id) {
   alerts = alerts.filter(a => a.id !== id);
   saveAlerts();
