@@ -13,9 +13,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { ticker, price, condition } = req.body;
+    const displayTicker = String(ticker).includes(":")
+  ? String(ticker).split(":")[1]
+  : String(ticker);
 
-    const message = `🚨 ALERT\n${ticker}\nCena: ${price}\nWarunek: ${condition}`;
+    const message = `🚨 ALERT\n${displayTicker}\nCena: ${price}\nWarunek: ${condition}`;
 
     const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
       method: "POST",
