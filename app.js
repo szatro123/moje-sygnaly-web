@@ -127,8 +127,8 @@ async function loadChart() {
 
   inputEl.value = symbol;
 
-  if (alertTickerEl && (!alertTickerEl.value.trim() || alertTickerEl.value.trim().toUpperCase() === input)) {
-    alertTickerEl.value = symbol;
+  if (alertTickerEl) {
+  alertTickerEl.value = symbol;
   }
 
   const src =
