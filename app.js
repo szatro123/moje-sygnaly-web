@@ -265,7 +265,9 @@ async function testTelegramAlert() {
     alert("FETCH ERROR:\n" + (err?.message || err));
   }
 }
-
+setInterval(() => {
+  loadAlerts();
+}, 15000);
 // — START —
 
 window.addEventListener("load", () => {
