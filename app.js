@@ -67,41 +67,21 @@ document.getElementById("ticker")?.addEventListener("keydown", (e) => {
 //
 // — WSPÓLNE ROZPOZNAWANIE TICKERA —
 //
-
 async function resolveTicker(rawTicker) {
-  let raw = String(rawTicker || "").trim().toUpperCase();
+  const raw = String(rawTicker || "").trim().toUpperCase();
 
   if (!raw) return "NASDAQ:NVDA";
   if (raw.includes(":")) return raw;
 
   try {
-    const res = await fetch(
-      `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(raw)}`
-    );
+    const res = await fetch(`/api/resolve-symbol?ticker=${encodeURIComponent(raw)}`);
     const data = await res.json();
 
-    const exact = (data || []).filter(
-      (s) => String(s.symbol || "").toUpperCase() === raw
-    );
-
-    const priority = ["NYSE", "NASDAQ", "AMEX", "ARCA", "BATS"];
-    let chosen = null;
-
-    for (const ex of priority) {
-      chosen = exact.find(
-        (s) => String(s.exchange || "").toUpperCase() === ex
-      );
-      if (chosen) break;
+    if (res.ok && data.ok && data.symbol) {
+      return String(data.symbol).toUpperCase();
     }
 
-    if (!chosen && exact.length > 0) {
-      chosen = exact[0];
-    }
-
-    if (chosen) {
-      return `${String(chosen.exchange).toUpperCase()}:${String(chosen.symbol).toUpperCase()}`;
-    }
-
+    console.log("resolveTicker backend error:", data);
     return raw;
   } catch (err) {
     console.log("resolveTicker error:", err);
