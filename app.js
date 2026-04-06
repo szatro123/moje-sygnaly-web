@@ -156,44 +156,6 @@ async function addAlert() {
     console.log(err);
   }
 }
-function removeAlert(id) {
-  alerts = alerts.filter(a => a.id !== id);
-  saveAlerts();
-  renderAlerts();
-}
-
-function saveAlerts() {
-  localStorage.setItem("priceAlerts", JSON.stringify(alerts));
-}
-
-function renderAlerts() {
-  const box = document.getElementById("alertsList");
-  if (!box) return;
-
-  if (alerts.length === 0) {
-    box.innerHTML = `<span class="placeholder-text">Tu pojawią się alarmy...</span>`;
-    return;
-  }
-
-  box.innerHTML = alerts.map(a => `
-    <div class="alert-item">
-      <div class="alert-top">
-        <span class="alert-ticker">${a.ticker}</span>
-        <button class="alert-remove" onclick="removeAlert(${a.id})">Usuń</button>
-      </div>
-      <div class="alert-meta">
-        Warunek: ${a.condition === "above" ? "cena powyżej" : "cena poniżej"} ${a.price}
-      </div>
-      <div class="alert-meta">
-        Dodano: ${new Date(a.createdAt).toLocaleString("pl-PL")}
-      </div>
-    </div>
-  `).join("");
-}
-
-window.addEventListener("load", () => {
-  renderAlerts();
-});
 async function testTelegramAlert() {
   const ticker =
     document.getElementById("alertTicker").value.trim().toUpperCase() || "NASDAQ:NVDA";
