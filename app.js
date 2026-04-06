@@ -143,20 +143,45 @@ async function addAlert() {
   const price = Number(priceInput.value);
   const condition = conditionInput.value;
 
-  if (!ticker) {
-    const chartTicker = document.getElementById("chartTicker");
-    if (chartTicker) {
-      ticker = chartTicker.value.trim().toUpperCase();
-    }
-  }
-
-  if (ticker && !ticker.includes(":")) {
-    ticker = "NASDAQ:" + ticker;
-  }
-
   if (!ticker || !price || price <= 0) {
     alert("Wpisz ticker i poprawną cenę alarmu");
     return;
+  }
+
+  let resolvedTicker = ticker;
+
+  // 🔥 AUTOMATYCZNE WYSZUKANIE GIEŁDY
+  if (!ticker.includes(":")) {
+    try {
+      const res = await fetch(
+        `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(ticker)}`
+      );
+      const data = await res.json();
+
+      const exact = (data || []).filter(
+        (s) => (s.symbol || "").toUpperCase() === ticker
+      );
+
+      const priority = ["NYSE", "NASDAQ", "AMEX"];
+      let chosen = null;
+
+      for (const ex of priority) {
+        chosen = exact.find(
+          (s) => (s.exchange || "").toUpperCase() === ex
+        );
+        if (chosen) break;
+      }
+
+      if (!chosen && exact.length > 0) {
+        chosen = exact[0];
+      }
+
+      if (chosen) {
+        resolvedTicker = `${chosen.exchange}:${chosen.symbol}`;
+      }
+    } catch (err) {
+      console.log("Błąd wyszukiwania tickera:", err);
+    }
   }
 
   try {
@@ -166,7 +191,7 @@ async function addAlert() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        ticker,
+        ticker: resolvedTicker,
         target_price: price,
         condition
       })
@@ -176,99 +201,22 @@ async function addAlert() {
 
     if (!res.ok || !data.ok) {
       alert("Błąd zapisu alertu");
-      console.log(data);
       return;
     }
 
-    alert("Alert zapisany do bazy");
+    alert("Alert zapisany");
 
-    tickerInput.value = ticker;
+    tickerInput.value = resolvedTicker;
     priceInput.value = "";
 
     loadAlerts();
+
   } catch (err) {
-    alert("Błąd połączenia z backendem");
+    alert("Błąd połączenia");
     console.log(err);
   }
 }
 
-async function deleteAlert(id) {
-  const ok = confirm("Usunąć ten alert?");
-  if (!ok) return;
-
-  try {
-    const res = await fetch("/api/delete-alert", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ id })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      alert("Błąd usuwania alertu");
-      console.log(data);
-      return;
-    }
-
-    loadAlerts();
-  } catch (err) {
-    alert("Błąd połączenia z backendem");
-    console.log(err);
-  }
-}
-
-async function loadAlerts() {
-  const box = document.getElementById("alertsList");
-  if (!box) return;
-
-  box.innerHTML = '<span class="placeholder-text">Ładowanie alarmów...</span>';
-
-  try {
-    const res = await fetch("/api/list-alerts");
-    const data = await res.json();
-
-    if (!res.ok || !data.ok) {
-      box.innerHTML = '<span class="placeholder-text">Błąd ładowania alarmów</span>';
-      console.log(data);
-      return;
-    }
-
-    const alerts = data.alerts || [];
-
-    if (alerts.length === 0) {
-      box.innerHTML = '<span class="placeholder-text">Tu pojawią się alarmy...</span>';
-      return;
-    }
-
-    box.innerHTML = alerts
-      .map(
-        (a) => `
-      <div class="alert-item">
-        <div class="alert-top">
-          <span class="alert-ticker">${a.ticker}</span>
-          <button class="alert-remove" onclick="deleteAlert(${a.id})">Usuń</button>
-        </div>
-        <div class="alert-meta">
-          Warunek: ${a.condition === "above" ? "cena powyżej" : "cena poniżej"} ${a.target_price}
-        </div>
-        <div class="alert-meta">
-          Status: ${a.triggered ? "zrealizowany" : "aktywny"}
-        </div>
-        <div class="alert-meta">
-          Dodano: ${a.created_at ? new Date(a.created_at).toLocaleString("pl-PL") : "-"}
-        </div>
-      </div>
-    `
-      )
-      .join("");
-  } catch (err) {
-    box.innerHTML = '<span class="placeholder-text">Błąd połączenia z bazą</span>';
-    console.log(err);
-  }
-}
 
 // — TEST TELEGRAM —
 
