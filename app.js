@@ -66,30 +66,56 @@ async function loadChart() {
   const inputEl = document.getElementById("chartTicker");
   const container = document.getElementById("tvchart");
 
-  let raw = inputEl.value.trim().toUpperCase();
-  if (!raw) raw = "NVDA";
+  let input = inputEl.value.trim().toUpperCase();
+  if (!input) input = "NVDA";
 
-  let resolved = raw;
+  let symbol = input;
 
-  try {
-    const res = await fetch(`/api/resolve-symbol?ticker=${encodeURIComponent(raw)}`);
-    const data = await res.json();
+  // jeśli nie ma giełdy → szukamy automatycznie
+  if (!input.includes(":")) {
+    try {
+      const res = await fetch(
+        `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(input)}`
+      );
 
-    if (res.ok && data.ok && data.symbol) {
-      resolved = data.symbol;
-    } else {
-      console.log("resolve-symbol:", data);
+      const data = await res.json();
+
+      const exact = (data || []).filter(
+        (s) => (s.symbol || "").toUpperCase() === input
+      );
+
+      const priority = ["NYSE", "NASDAQ", "AMEX"];
+
+      let chosen = null;
+
+      for (const ex of priority) {
+        chosen = exact.find(
+          (s) => (s.exchange || "").toUpperCase() === ex
+        );
+        if (chosen) break;
+      }
+
+      if (!chosen && exact.length > 0) {
+        chosen = exact[0];
+      }
+
+      if (chosen) {
+        symbol = `${chosen.exchange}:${chosen.symbol}`;
+      } else {
+        symbol = input;
+      }
+
+    } catch (err) {
+      console.log("search error", err);
     }
-  } catch (err) {
-    console.log("resolve-symbol error:", err);
   }
 
-  // pokaż co znalazło (np. NYSE:AA)
-  inputEl.value = resolved;
+  // pokaż co znalazł
+  inputEl.value = symbol;
 
   const src =
     "https://www.tradingview.com/widgetembed/?" +
-    "symbol=" + encodeURIComponent(resolved) +
+    "symbol=" + encodeURIComponent(symbol) +
     "&interval=15" +
     "&timezone=Europe%2FWarsaw" +
     "&theme=dark" +
