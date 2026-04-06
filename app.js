@@ -68,24 +68,42 @@ async function loadChart() {
 
   if (!input) input = "NVDA";
 
-  const exchanges = ["NASDAQ", "NYSE", "AMEX"];
   let symbol = input;
 
   if (!input.includes(":")) {
     try {
-      const res = await fetch(`https://symbol-search.tradingview.com/symbol_search/?text=${input}`);
+      const res = await fetch(
+        `https://symbol-search.tradingview.com/symbol_search/?text=${encodeURIComponent(input)}`
+      );
       const data = await res.json();
 
-      const found = data.find(s => s.symbol === input);
+      const exactMatches = (data || []).filter(
+        (s) => (s.symbol || "").toUpperCase() === input
+      );
 
-      if (found) {
-        symbol = `${found.exchange}:${input}`;
+      const preferredExchanges = ["NYSE", "NASDAQ", "AMEX"];
+
+      let chosen = null;
+
+      for (const ex of preferredExchanges) {
+        chosen = exactMatches.find(
+          (s) => (s.exchange || "").toUpperCase() === ex
+        );
+        if (chosen) break;
+      }
+
+      if (!chosen && exactMatches.length > 0) {
+        chosen = exactMatches[0];
+      }
+
+      if (chosen) {
+        symbol = `${chosen.exchange.toUpperCase()}:${chosen.symbol.toUpperCase()}`;
       } else {
-        symbol = "NASDAQ:" + input;
+        symbol = `NASDAQ:${input}`;
       }
     } catch (e) {
       console.log("search error", e);
-      symbol = "NASDAQ:" + input;
+      symbol = `NASDAQ:${input}`;
     }
   }
 
