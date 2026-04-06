@@ -105,11 +105,11 @@ async function loadChart() {
 
   const symbol = await resolveTicker(input);
 
-  inputEl.value = symbol;
+inputEl.value = symbol;
 
-  if (alertTickerEl) {
+if (alertTickerEl) {
   alertTickerEl.value = symbol;
-  }
+}
 
   const src =
     "https://www.tradingview.com/widgetembed/?" +
