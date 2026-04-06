@@ -100,7 +100,6 @@ document.getElementById("chartTicker").addEventListener("keydown", e => {
 window.addEventListener("load", () => {
   loadChart();
 });
-let alerts = JSON.parse(localStorage.getItem("priceAlerts") || "[]");
 
 async function addAlert() {
   const tickerInput = document.getElementById("alertTicker");
